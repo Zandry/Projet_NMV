@@ -18,5 +18,7 @@ all :
 
 clean:
 	make -C $(KERNELDIR) M=$(PWD) clean
+	rm user_request
+	rm proc_test
 
 endif
