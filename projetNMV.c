@@ -28,6 +28,8 @@ DECLARE_WAIT_QUEUE_HEAD(wait_queue);
 struct file_operations ops;
 int major_num = 0;
 const char *name = "projet_nmv";
+bool kill_cond = false; 
+bool wait_cond = false; 
 
 struct kill_event {
 	int signal; 
@@ -111,6 +113,8 @@ static void nmv_kill(struct work_struct *wk){
 	else{
 		pr_err("Pid %d not found!\n", kc->event.pid_nr);
 	}
+	kill_cond = true; 
+	wake_up(&wait_queue); 
 }
 
 /* lsmod command */
@@ -146,8 +150,8 @@ static void nmv_meminfo(struct work_struct *wk){
 	si_meminfo(&memInfo);
 	memInfoStr = kmalloc(BUFFER_SIZE, GFP_KERNEL);
 	scnprintf(memInfoStr, BUFFER_SIZE,
-				      "\tTotal usable main memory size : %ld\n\tAvailable memory size : %ld",
-				      memInfo.totalram, memInfo.freeram);
+				      "\tTotal usable main memory size : %ld\n\tAvailable memory : %ld\n\tUsed memory : %ld",
+				      memInfo.totalram, memInfo.freeram, memInfo.totalram - memInfo.freeram);
 	strncat(memInfoStr, "\n", 1);
 	mw->memInfoStr = kmalloc(BUFFER_SIZE, GFP_KERNEL);
 	strcpy(mw->memInfoStr, memInfoStr);
@@ -278,7 +282,11 @@ static void nmv_wait(struct work_struct *wk)
 
 	wc = container_of(wk, struct wait_command, task);
 	
+	create_wait_list(&(wc->head), &(wc->event));
 	nmv_blocking_wait(&(wc->head), wc->event.wait_all);//on attend les processus donnes
+
+	wait_cond = true; 
+	wake_up(&wait_queue); 
 }
 
 
@@ -291,7 +299,9 @@ long driver_cmd (struct file * f, unsigned int requete, unsigned long param)
 			pr_info("Received IOCTL NMV_KILL : Pid : %d\n", kill_command_execute.event.pid_nr);
 			schedule_work(&(kill_command_execute.task));
 			if(kill_command_execute.event.syn == true)    /* Synchrone */
-				flush_work(&(kill_command_execute.task));
+				wait_event(wait_queue, kill_cond);//flush_work(&(kill_command_execute.task));
+			kill_cond = false;
+			
 			break;
 
 		case NMV_LSMOD:
@@ -305,9 +315,10 @@ long driver_cmd (struct file * f, unsigned int requete, unsigned long param)
 		case NMV_WAIT:
 			copy_from_user(&(wait_command_execute.event), (struct wait_event *)param, sizeof(struct wait_event));
 			pr_info("Received IOCTL NMV_WAIT : %d processes, %d wait_all !\n", wait_command_execute.event.nb_pid, wait_command_execute.event.wait_all);
-			create_wait_list(&(wait_command_execute.head), &(wait_command_execute.event));
+			//create_wait_list(&(wait_command_execute.head), &(wait_command_execute.event));
 			schedule_work(&(wait_command_execute.task));
-			flush_work(&(wait_command_execute.task));
+			wait_event(wait_queue, wait_cond);//flush_work(&(wait_command_execute.task));
+			wait_cond = false;
 			break;
 		
 		case NMV_MEMINFO:
@@ -316,7 +327,7 @@ long driver_cmd (struct file * f, unsigned int requete, unsigned long param)
 			flush_work(&(meminfo_command_execute.task));
 			pr_info("%s", meminfo_command_execute.memInfoStr);
 			copy_to_user((char *)param, meminfo_command_execute.memInfoStr, BUFFER_SIZE);
-			break; 
+			break;
 		
 		default:
 			pr_err("Bad command !\n");
