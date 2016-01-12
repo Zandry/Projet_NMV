@@ -3,7 +3,7 @@
 
 ifneq ($(KERNELRELEASE),)
 
-obj-m := projetNMV.o
+obj-m := projet_nmv.o
 
 else
 	
