@@ -24,6 +24,11 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	kill fonctionne en deux mode: synchrone et asynchrone. 
 	- kill en mode synchrone: Le module s'endort sur le wait_queue dans l'attente que le signal est bien envoyé au proccessus - wait_event(wait_queue, kill_cond). Une fois que la fonction nmv_kill finit son travail, il change la valeur de la variable kill_cond et réveille "tout" les processus (ici c'est le programme principal du module) via l'appel de la fonction wake_up. Une autre solution est d'utiliser la fonction flush_work pour forcer l'exécution d'une tâche et d'attendre qu'elle se termine.  
 	- kill en mode asynchrone: Le module retourne en état "normal" (attendre d'autres commandes arrivées) après déléguer le traitement à la fonction nmv_kill (insérer dans le work_queue). 
+	
+	Expérimentation: 
+	- Compiler et exécuter le programme proc_test.c avec l'option &. 
+	- Essayer de "kill" les proccessus proc_test et observer le résultat.
+	- Vérifier la terminaison des proccessus par le command ps -aux 
 		
 	b. waitall <pid> [<pid> ...]
 	
