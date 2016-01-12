@@ -124,6 +124,7 @@ static void nmv_lsmod(struct work_struct *wk){
 	char *module_info;
 	int mem_free, char_append;
 
+	pr_info("Process a lsmod command");
 	mem_free = BUFFER_SIZE;
 	char_append = 0;
 	lc = container_of(wk, struct lsmod_command, task);
@@ -145,6 +146,7 @@ static void nmv_meminfo(struct work_struct *wk){
 	char *memInfoStr;
 	struct sysinfo memInfo;
 	
+	pr_info("Process a meminfo command");
 	mw = container_of(wk, struct meminfo_command, task);
 	kfree(mw->memInfoStr);
 	si_meminfo(&memInfo);
