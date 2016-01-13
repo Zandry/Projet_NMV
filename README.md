@@ -13,6 +13,12 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	
 	La suite du document va vous présenter de la manière détaillée des commandes  du noyau notamment kill - envoyer un signal à un proccessus, waitall - attendre en bloquant la terminaison de tous les processus donnés, wait attendre en bloquant la terminaison d'un des processus donnés, print meminfo - afficher les informations sur l'état de la mémoire, lsmod - renvoyer la liste des modules chargés dans le noyau. 
 	
+	Instruction d'implémentation: 
+	- Insertion d'un module dans le noyau: insmod projet_nmv.ko
+	- Récupération le numéro majeur généré par le module: major_number affiché dans KGBD
+	- Création d'un périphérique mknod /dev/projet_nmv c major_number 0 (par défaut, on a assigné le nom du périphérique à "projet_nmv")
+	- Lancement du programme d'utilisateur et examination des commandes
+	
 2. Commandes implémentées
 
 	a. kill <signal> <pid>
