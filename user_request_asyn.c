@@ -14,6 +14,8 @@
 #define NMV_MEMINFO _IOW('N',3,void*)
 #define NMV_ASYN _IOR('N',4,void*)
 #define NMV_LSMOD_ASYN _IOR('N',5,void*)
+#define NMV_MEMINFO_ASYN _IOR('N',6,void*)
+#define NMV_WAIT_ASYN _IOR('N',7,void*)
 #define BUFFER_SIZE 1024
 #define MAX_PROC_WAIT 100
 
@@ -70,10 +72,10 @@ int main(int argc, char ** argv)
 			my_kill_event.syn = syn;
 			printf("Sending (%s): %d signal to %d process\n", syn ? "sync" : "async", my_kill_event.signal, my_kill_event.pid_nr);
 			ioctl(f, NMV_KILL, &my_kill_event); 
-		}else if (strncmp(request, "lsmod", 5) == 0 && syn == true){
+		}else if (strncmp(request, "lsmod", 5) == 0 && syn == true){ // Synchrone 
 			ioctl(f, NMV_LSMOD, &response);
 			printf("->List of loaded modules: \n%s", response);
-		}else if (strncmp(request, "lsmod", 5) == 0 && syn == false){
+		}else if (strncmp(request, "lsmod", 5) == 0 && syn == false){ // Asynchrone 
 			ioctl(f, NMV_LSMOD_ASYN, &response);
 			printf("->List of loaded modules: \n%s\n", response);
 			///////////// second call to get the result
@@ -81,15 +83,24 @@ int main(int argc, char ** argv)
 			ioctl(f, NMV_ASYN, &response);
 			printf("->List of loaded modules: \n%s", response);
 			/////////////////////////////
-		}else if(strncmp(request, "meminfo", 7) == 0){
+		}else if(strncmp(request, "meminfo", 7) == 0 && syn == true){ // Synchrone
 			ioctl(f, NMV_MEMINFO, &response);
 			printf("->Meminfo:\n%s", response);
+		}else if(strncmp(request, "meminfo", 7) == 0 && syn == false){ // Asynchrone 
+			ioctl(f, NMV_MEMINFO_ASYN, &response);
+			printf("->Meminfo: \n%s\n", response);
+			///////////// second call to get the result
+			printf("Calling NMV_ASYN......\n");
+			ioctl(f, NMV_ASYN, &response);
+			printf("->Meminfo: \n%s", response);
+			/////////////////////////////
 		}else if (strncmp(request, "quit", 4) == 0){
 			break;	
-		}else if (strncmp(request, "wait", 4) == 0){
+		}else if (strncmp(request, "wait", 4) == 0 && syn == true){ // Synchrone 
 			my_wait_event.nb_pid = 0;
 			my_wait_event.wait_all = (strncmp(request, "waitall", 7) == 0);
 			printf("Waiting for %s process to terminate :\n", my_wait_event.wait_all ? "all" : "a");
+			
 			ptr = strtok (request," ");//Coupe la commande en fonction des espaces
 			while (1)
 			{
@@ -102,6 +113,30 @@ int main(int argc, char ** argv)
 			printf("%d process monitored\n", my_wait_event.nb_pid);
 			
 			ioctl(f, NMV_WAIT, &my_wait_event);
+			printf("finished waiting !\n");
+		}else if (strncmp(request, "wait", 4) == 0 && syn == false){ // Asynchrone 
+			my_wait_event.nb_pid = 0;
+			my_wait_event.wait_all = (strncmp(request, "waitall", 7) == 0);
+			printf("Waiting for %s process to terminate :\n", my_wait_event.wait_all ? "all" : "a");
+			
+			ptr = strtok (request," ");//Coupe la commande en fonction des espaces
+			while (1)
+			{
+				ptr = strtok (NULL," ");//Donne le morceau suivant de la commande
+				if (ptr == NULL || my_wait_event.nb_pid >= MAX_PROC_WAIT || sscanf(ptr, "%d", &(my_wait_event.pid_nr[my_wait_event.nb_pid])) == 0)
+					break;
+				printf("Pid : %d\n", my_wait_event.pid_nr[my_wait_event.nb_pid]);
+				my_wait_event.nb_pid++;
+			}
+			printf("%d process monitored\n", my_wait_event.nb_pid);
+			
+			ioctl(f, NMV_WAIT_ASYN, &my_wait_event);
+			printf("Processing wait.... Please call NMV_ASYN to receive the result\n");
+			///////////// second call to get the result
+			printf("Calling NMV_ASYN......\n");
+			ioctl(f, NMV_ASYN, &response);
+			printf("->Wait result: \n\t%s\n", response);
+			/////////////////////////////
 			printf("finished waiting !\n");
 		}else{
 			printf("Bad command, please try again!\n");
