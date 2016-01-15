@@ -40,6 +40,7 @@ bool wait_cond = false;
 bool wait_cond2 = false; 
 char *result; 
 
+
 struct kill_event {
 	int signal; 
 	pid_t pid_nr; 
