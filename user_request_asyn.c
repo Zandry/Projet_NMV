@@ -19,7 +19,6 @@
 #define BUFFER_SIZE 1024
 #define MAX_PROC_WAIT 100
 
-
 struct kill_event {
 	int signal; 
 	pid_t pid_nr; 
