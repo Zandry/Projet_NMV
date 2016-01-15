@@ -18,6 +18,8 @@
 #define NMV_MEMINFO _IOW('N',3,void*)
 #define NMV_ASYN _IOR('N',4,void*)
 #define NMV_LSMOD_ASYN _IOR('N',5,void*)
+#define NMV_MEMINFO_ASYN _IOR('N',6,void*)
+#define NMV_WAIT_ASYN _IOR('N',7,void*)
 
 #define BUFFER_SIZE 1024
 
@@ -32,10 +34,11 @@ int major_num = 0;
 const char *name = "projet_nmv";
 bool kill_cond = false; 
 bool lsmod_cond = false;
+bool meminfo_cond = false;  
 bool asyn_cond = false;
 bool wait_cond = false; 
+bool wait_cond2 = false; 
 char *result; 
-bool finished = false; // variable to know when a command has been treated 
 
 struct kill_event {
 	int signal; 
@@ -168,7 +171,6 @@ static void nmv_lsmod(struct work_struct *wk){
 	}
 	pr_info("Dear user, I've just finished my job of proccessing lsmod command!\n");
 	pr_info("%s", result);  // I've just finished my job of proccessing lsmod command
-	finished = true; 
 	lsmod_cond = true; 
 	asyn_cond = true; 
 	wake_up(&wait_queue);
@@ -206,6 +208,10 @@ static void nmv_meminfo(struct work_struct *wk){
 	/* */
 	
 	kfree(memInfoStr);
+	
+	meminfo_cond = true; 
+	asyn_cond = true; 
+	wake_up(&wait_queue);
 }
 
 
@@ -329,20 +335,19 @@ void nmv_blocking_wait(struct list_head *head, bool all)
 static void nmv_wait(struct work_struct *wk)
 {
 	struct wait_command *wc;
-	strcpy(result, "Processing wait command...");
-	
-	////// For asynchrone 	
-	set_current_state(TASK_INTERRUPTIBLE);
-	schedule_timeout(5*HZ);
-	/////
 
 	wc = container_of(wk, struct wait_command, task);
 	
 	create_wait_list(&(wc->head), &(wc->event));
 	nmv_blocking_wait(&(wc->head), wc->event.wait_all);//on attend les processus donnes
 
+	/* Reset the result string each time we use */
+	kfree(result); 
+	result = (char*)kmalloc(BUFFER_SIZE, GFP_KERNEL);
+	/**/
 	strcpy(result, "Wait command success !");
 	wait_cond = true; 
+	asyn_cond = true; 
 	wake_up(&wait_queue); 
 }
 
@@ -391,22 +396,54 @@ long driver_cmd (struct file * f, unsigned int requete, unsigned long param)
 			schedule_work(&(wait_command_execute.task));
 			wait_event(wait_queue, wait_cond);//flush_work(&(wait_command_execute.task));
 			wait_cond = false;
+			asyn_cond = false; 
 			break;
+			
+		case NMV_WAIT_ASYN:
+			copy_from_user(&(wait_command_execute.event), (struct wait_event *)param, sizeof(struct wait_event));
+			pr_info("Received IOCTL NMV_WAIT_ASYN : %d processes, %d wait_all !\n", wait_command_execute.event.nb_pid, wait_command_execute.event.wait_all);
+			schedule_work(&(wait_command_execute.task));
+			/* Asynchrone */
+			/* Reset the result string each time we use */
+			kfree(result); 
+			result = (char*)kmalloc(BUFFER_SIZE, GFP_KERNEL);
+			strcpy(result, "Processing wait.... Please call NMV_ASYN to receive the result");
+			/**/
+			//copy_to_user((char *)param, result , BUFFER_SIZE);
+			pr_info("%s", result);
+			break; 
 		
 		case NMV_MEMINFO:
 			pr_info("Received IOCTL NMV_MEMINFO\n");
 			schedule_work(&(meminfo_command_execute.task));
-			flush_work(&(meminfo_command_execute.task));
+			/* Synchrone */
+			wait_event(wait_queue, meminfo_cond); //flush_work(&(meminfo_command_execute.task));
+			meminfo_cond = false; 
+			asyn_cond = false; 
 			pr_info("%s", meminfo_command_execute.memInfoStr);
 			copy_to_user((char *)param, meminfo_command_execute.memInfoStr, BUFFER_SIZE);
 			break;
 			
+		case NMV_MEMINFO_ASYN: 
+			pr_info("Received IOCTL NMV_MEMINFO_ASYN\n");
+			schedule_work(&(meminfo_command_execute.task));
+			/* Asynchrone */
+			/* Reset the result string each time we use */
+			kfree(result); 
+			result = (char*)kmalloc(BUFFER_SIZE, GFP_KERNEL);
+			strcpy(result, "Processing meminfo.... Please call NMV_ASYN to receive the result");
+			/**/
+			//copy_to_user((char *)param, result , BUFFER_SIZE);
+			pr_info("%s", result);	
+			break; 
+			
 		case NMV_ASYN:
 			wait_event(wait_queue, asyn_cond);
 			asyn_cond = false; 
-			lsmod_cond = false; 
+			lsmod_cond = false;
+			meminfo_cond = false;  
+			wait_cond = false;
 			copy_to_user((char *)param, result, BUFFER_SIZE);
-			finished = false; 
 			break;
 		
 		default:
