@@ -1,5 +1,5 @@
 .PHONY: all 
-#.SECONDARY:
+ #.SECONDARY:
 
 ifneq ($(KERNELRELEASE),)
 
