@@ -53,13 +53,12 @@ int main(int argc, char ** argv)
 	printf("\t\tAuthors: Minh-Hieu PHAM and Jonathan Espie--Caullet\n");
 	printf("\t\t\tMaster SAR - UPMC 2016\n\n");
 	printf("Command simulation: \n");
-	printf("1. Send a signal to a process in asynchronous mode: kill [pid] [signal] &\n");
-	printf("2. Send a signal to a process in synchronous mode: kill [pid] [signal]\n");
-	printf("3. List all loaded modules in kernel: lsmod\n");
-	printf("4. Display current information about memory: meminfo\n");
-	printf("5. Wait for any given process to terminate: wait [pid] [pid ...]\n");
-	printf("6. Wait for all given process to terminate: waitall [pid] [pid ...]\n");
-	printf("7. Exit the simulator: quit\n");
+	printf("1. Send a signal to a process: kill [pid] [signal] [&]\n");
+	printf("2. List all loaded modules in kernel: lsmod [&]\n");
+	printf("3. Display current information about memory: meminfo [&] \n");
+	printf("4. Wait for any given process to terminate: wait [pid] [pid ...] [&]\n");
+	printf("5. Wait for all given process to terminate: waitall [pid] [pid ...] [&]\n");
+	printf("6. Exit the simulator: quit\n");
 	while (1)
 	{
 		printf("Please enter your command : ");
