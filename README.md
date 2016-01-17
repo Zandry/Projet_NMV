@@ -35,12 +35,8 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	- Compiler et exécuter le programme proc_test.c avec l'option &. 
 	- Essayer de "kill" les proccessus proc_test et observer le résultat.
 	- Vérifier la terminaison des proccessus par le command ps -aux 
-		
-	b. waitall <pid> [<pid> ...]
 	
-	c. wait <pid> [<pid> ...]
-	
-	d. print meminfo
+	b. print meminfo
 
 	La commande permet d'obtenir des informations sur l'état de la mémoire. Au sein du noyau Linux, on utilise la fonction si_meminfo pour obtenir ces informations. 
 		
@@ -61,7 +57,7 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 		+ printf("->Meminfo: \n%s", response);
 	+ Dans le cadre du projet, on considère que pour un moment, il n'y a qu'un seule programme utilisateur et que l'utilisateur ne lance qu'une seule requête. 
 	
-	e. lsmod 
+	c. lsmod 
 
 	La commande renvoie une liste des modules chargés dans le noyau (noms, compteur de références, taille, ...). 
 		
@@ -94,6 +90,9 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
  
 		#ifdef CONFIG_MODULES_TREE_LOOKUP
 		======
+		
+	d. waitall <pid> [<pid> ...] et wait <pid> [<pid> ...]
+
 		
 3. Conclusion
 	Dans le cadre du projet NMV, les résultats peuvent être résumés en trois points décrits ci-dessous : 
