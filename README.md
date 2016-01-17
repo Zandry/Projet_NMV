@@ -93,6 +93,11 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 		
 	d. waitall <pid> [<pid> ...] et wait <pid> [<pid> ...]
 
+	En recevant la liste des pids, le programme utilisateur détermine pour quel mode wait ou waitall en construisant la structure wait_event qui correspond (en indiquant wait_all à true ou false). Le module du noyau ensuit crée une liste des processus nmv_wait_list qu'on doit attendre (fonction add_process). Dans la fonction principale du traitement nmv_blocking_wait, on vérifie régulièrement la vie des processus via la fonction is_process_alive en parcourant la list de processus considérés. Si un processus est mort, il est retiré de la liste des processus vivants. Dépendant l'option d'attente (wait ou waitall), le module termine le traitement. 
+
+	Afin de mieux observer les processus vivants, on récupère le code de la fonction monitor_pid des TPs pour afficher chaque 1 seconde un message pour vérifier si un processus est toujours vivant. 
+	
+	Les commandes wait et waitall fonctionnent en deux mode synchrone et asynchrone de même mécanisme avec les commandes kill, meminfo et lsmod. 
 		
 3. Conclusion
 	Dans le cadre du projet NMV, les résultats peuvent être résumés en trois points décrits ci-dessous : 
@@ -106,7 +111,3 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	En réalisant le projet, on rencontre la problématique de multi-utilisation. C'est-à-dire, pour un moment, s'il y a deux requêtes asynchrone par deux utilisateurs différents envoyées au noyaux et qu'on n'a qu'une seule variable <<result>> pour stocker la réponse, on n'est pas capable de "identifier" quelle requête termine avant. Une des solutions proposées est d'implémenter le mécanisme multithreading pour travailler avec chaque requête reçu.  
 	
 	Il reste cependant des points à améliorer, notamment concernant l’optimisation du code et de la gestion efficace d'allocation de la mémoire. Une perspective du projet serait de mieux connaitre le savoir-faire sur l'implémentation et l'utilisation d'un propre workqueue indépendamment le workqueue du noyau. Le projet soulève une autre perspective d'implémenter le mécanisme multithreading pour répondre la problématique muli-utilisation posée au-dessus. 
-
-	
-	
-
