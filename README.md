@@ -46,6 +46,24 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	En recevant la commande envoyée par l'utilisateur, le programme principal du module (driver_cmd) délègue le traitement à la fonction nmv_meminfo. Après récupérer les information sur l'état de la mémoire via la fonction si_meminfo, nmv_meminfo les garde dans la structure de type sysinfo. Afin de symplifier le programme, on a décidé de générer un message de type de chaîne de caractères qui contient les informations de la mémoire (le champs char *memInfoStr de la structure meminfo_command) et l'envoyer à l'utilisateur via la fonction copy_to_user (le main du traitement du module). 
 		
 	En acceptant le message renvoyé par le module, le programme de test (user_request) affiche les informations sur l'état de la mémoire. 
+
+	meminfo fonctionne en deux modes "synchrone" et "asynchrone"
+	- En mode synchrone, le programme utilisateur lance la requête NMV_LSMOD et attend la réponse du côté de "noyau" (module implémenté). En recevant la requête NMV_LSMOD, le module récupère les informations de la mémoire et renvoie au programme utilisateur. Le programme utilisateur reçoit la réponse du module et termine sa tâche. 
+	- En mode asynchrone, le programme utilisateur lance la requête NMV_LSMOD et attend la réponse du côté de "noyau". Au lieu de traiter la requête puis envoyer la réponse, le noyau renvoie tout de suite un message "Processing meminfo.... Please call NMV_ASYN to receive the result" au programme utilisateur puis continue de traiter la requête. Afin de simuler de la manière approximative, dans nôtre projet, on a ajouter un délai pour chaque traitement: 
+	////// For asynchrone 	
+		set_current_state(TASK_INTERRUPTIBLE);
+		schedule_timeout(3*HZ);
+	/////
+	+ à la fin du traitement, le noyau remplit une chaîne caractère <<result>> qui contient la réponse de la requête. 
+	/* store information about list of modules in result */
+		strcat(result, memInfoStr);
+	/* */
+	+ pourque le programme utilisateur puisse savoir la réponse de sa requête, il devrait appeler une deuxième requête NVM_ASYN pour lire la réponse qui était "stocké" dans la chaîne <<result>>. 
+	///////////// second call to get the result
+			printf("Calling NMV_ASYN......\n");
+			ioctl(f, NMV_ASYN, &response);
+			printf("->Meminfo: \n%s", response);
+	/////////////////////////////
 		
 	e. lsmod 
 	La commande renvoie une liste des modules chargés dans le noyau (noms, compteur de références, taille, ...). 
