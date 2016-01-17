@@ -52,18 +52,20 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	- En mode asynchrone, le programme utilisateur lance la requête NMV_LSMOD et attend la réponse du côté de "noyau". Au lieu de traiter la requête puis envoyer la réponse, le noyau renvoie tout de suite un message "Processing meminfo.... Please call NMV_ASYN to receive the result" au programme utilisateur puis continue de traiter la requête. Afin de simuler de la manière approximative, dans nôtre projet, on a ajouter un délai pour chaque traitement: 
 		+ set_current_state(TASK_INTERRUPTIBLE);
 		+ schedule_timeout(3*HZ);
-	
 	+ à la fin du traitement, le noyau remplit une chaîne caractère <<result>> qui contient la réponse de la requête. 
 		+ strcat(result, memInfoStr);
-	+ pourque le programme utilisateur puisse savoir la réponse de sa requête, il devrait appeler une deuxième requête NVM_ASYN pour lire la réponse qui était "stocké" dans la chaîne <<result>>. 
+	+ pour que le programme utilisateur puisse savoir la réponse de sa requête, il devrait appeler une deuxième requête NVM_ASYN pour lire la réponse qui était "stocké" dans la chaîne <<result>>. 
 		+ printf("Calling NMV_ASYN......\n");
 		+ ioctl(f, NMV_ASYN, &response);
 		+ printf("->Meminfo: \n%s", response);
-		
+	+ Dans le cadre du projet, on considère que pour un moment, il n'y a qu'un seule programme utilisateur et que l'utilisateur ne lance qu'une seule requête. 
+	
 	e. lsmod 
 	La commande renvoie une liste des modules chargés dans le noyau (noms, compteur de références, taille, ...). 
 		
 	La commande lsmod est implémentée de la manière similaire avec la commande meminfo documenté ci-dessus. Particulièrement, on devrait modifier et recompiler le noyau afin d'exporter la liste des modules qui est défini comme une variable globale dans le noyau. Cette modification est détaillée dans le fichier kernel.patch
+
+	Comme la command meminfo, La commande lsmod fonctionne en deux mode asynchrone (avec &) et synchrone.   
 		
 		======
 		diff -Naur linux-4.2.3-orig/include/linux/module.h linux-4.2.3/include/linux/module.h
@@ -99,8 +101,10 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	- Enfin, nous avons implémenté le projet en profitant des connaissances acquises et des travaux effectués pendant le TP/TME notamment  Monitoring de l’activité d’un processus (TP05), Gestion de la mémoire dans le noyau (TP06), Traitement des ioctl, ect. Les démonstrations et leurs explications expérimentales prouvent que l’implémentation est cohérente avec la conception. 
 
 	La réalisation de ce projet nous a permis d’acquérir une expérience dans la gestion des tâches afin de respecter le temps imparti dédié à la réalisation de ce travail en groupe. Notre compétences de programmation du noyau, surtout concernant la gestion des ressources du noyau se sont nettement améliorées grâce à ce projet. 
-
-	Il reste cependant des points à améliorer, notamment concernant l’optimisation du code et de la gestion efficace d'allocation de la mémoire. Une autre perspective du projet serait de mieux connaitre le savoir-faire sur l'implémentation et l'utilisation d'un propre workqueue indépendamment le workqueue du noyau.
+	
+	En réalisant le projet, on rencontre la problématique de multi-utilisation. C'est-à-dire, pour un moment, s'il y a deux requêtes asynchrone par deux utilisateurs différents envoyées au noyaux et qu'on n'a qu'une seule variable <<result>> pour stocker la réponse, on n'est pas capable de "identifier" quelle requête termine avant. Une des solutions proposées est d'implémenter le mécanisme multithreading pour travailler avec chaque requête reçu.  
+	
+	Il reste cependant des points à améliorer, notamment concernant l’optimisation du code et de la gestion efficace d'allocation de la mémoire. Une perspective du projet serait de mieux connaitre le savoir-faire sur l'implémentation et l'utilisation d'un propre workqueue indépendamment le workqueue du noyau. Le projet soulève une autre perspective d'implémenter le mécanisme multithreading pour répondre la problématique muli-utilisation posée au-dessus. 
 
 	
 	
