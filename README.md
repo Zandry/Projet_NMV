@@ -50,26 +50,15 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	meminfo fonctionne en deux modes "synchrone" et "asynchrone"
 	- En mode synchrone, le programme utilisateur lance la requête NMV_LSMOD et attend la réponse du côté de "noyau" (module implémenté). En recevant la requête NMV_LSMOD, le module récupère les informations de la mémoire et renvoie au programme utilisateur. Le programme utilisateur reçoit la réponse du module et termine sa tâche. 
 	- En mode asynchrone, le programme utilisateur lance la requête NMV_LSMOD et attend la réponse du côté de "noyau". Au lieu de traiter la requête puis envoyer la réponse, le noyau renvoie tout de suite un message "Processing meminfo.... Please call NMV_ASYN to receive the result" au programme utilisateur puis continue de traiter la requête. Afin de simuler de la manière approximative, dans nôtre projet, on a ajouter un délai pour chaque traitement: 
-	=====
-	////// For asynchrone 	
-		set_current_state(TASK_INTERRUPTIBLE);
-		schedule_timeout(3*HZ);
-	/////
-	=====
+		+ set_current_state(TASK_INTERRUPTIBLE);
+		+ schedule_timeout(3*HZ);
+	
 	+ à la fin du traitement, le noyau remplit une chaîne caractère <<result>> qui contient la réponse de la requête. 
-	=====
-	/* store information about list of modules in result */
-		strcat(result, memInfoStr);
-	/* */
-	=====
+		+ strcat(result, memInfoStr);
 	+ pourque le programme utilisateur puisse savoir la réponse de sa requête, il devrait appeler une deuxième requête NVM_ASYN pour lire la réponse qui était "stocké" dans la chaîne <<result>>. 
-	=====
-	///////////// second call to get the result
-			printf("Calling NMV_ASYN......\n");
-			ioctl(f, NMV_ASYN, &response);
-			printf("->Meminfo: \n%s", response);
-	/////////////////////////////
-	=====
+		+ printf("Calling NMV_ASYN......\n");
+		+ ioctl(f, NMV_ASYN, &response);
+		+ printf("->Meminfo: \n%s", response);
 		
 	e. lsmod 
 	La commande renvoie une liste des modules chargés dans le noyau (noms, compteur de références, taille, ...). 
