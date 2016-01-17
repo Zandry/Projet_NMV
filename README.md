@@ -41,6 +41,7 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	c. wait <pid> [<pid> ...]
 	
 	d. print meminfo
+
 	La commande permet d'obtenir des informations sur l'état de la mémoire. Au sein du noyau Linux, on utilise la fonction si_meminfo pour obtenir ces informations. 
 		
 	En recevant la commande envoyée par l'utilisateur, le programme principal du module (driver_cmd) délègue le traitement à la fonction nmv_meminfo. Après récupérer les information sur l'état de la mémoire via la fonction si_meminfo, nmv_meminfo les garde dans la structure de type sysinfo. Afin de symplifier le programme, on a décidé de générer un message de type de chaîne de caractères qui contient les informations de la mémoire (le champs char *memInfoStr de la structure meminfo_command) et l'envoyer à l'utilisateur via la fonction copy_to_user (le main du traitement du module). 
@@ -61,6 +62,7 @@ Remerciement: Au terme de notre travail, nous tenons à témoigner notre profond
 	+ Dans le cadre du projet, on considère que pour un moment, il n'y a qu'un seule programme utilisateur et que l'utilisateur ne lance qu'une seule requête. 
 	
 	e. lsmod 
+
 	La commande renvoie une liste des modules chargés dans le noyau (noms, compteur de références, taille, ...). 
 		
 	La commande lsmod est implémentée de la manière similaire avec la commande meminfo documenté ci-dessus. Particulièrement, on devrait modifier et recompiler le noyau afin d'exporter la liste des modules qui est défini comme une variable globale dans le noyau. Cette modification est détaillée dans le fichier kernel.patch
