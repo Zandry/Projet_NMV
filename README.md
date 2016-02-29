@@ -3,9 +3,9 @@
 	Etudiant: Minh-Hieu PHAM et Jonathan Espié--Caullet
 	Master SAR - 2015/2016
 
-	Ce Readme a pour but de documenter notre travail dans le cadre de la matière Noyau-Multicoeurs-Virtualisation (NMV). La documentation commence par la présentation du projet puis présente le déroulement de chaque commande implémentée.  
+Ce Readme a pour but de documenter notre travail dans le cadre de la matière Noyau-Multicoeurs-Virtualisation (NMV). La documentation commence par la présentation du projet puis présente le déroulement de chaque commande implémentée.  
 	
-	Remerciement: Au terme de notre travail, nous tenons à témoigner notre profonde reconnaissance à toutes les personnes dont nous avons sollicité la compétence et l’expérience.  Nous remercions vivement Monsieur Julien Sopéna, Professeur à l’Université Pierre et Marie Curie, Monsieur Maxime Lorrillere ainsi que nos camarades en SAR. Nous souhaitons leur exprimer notre gratitude pour les connaissances qu’ils ont partagées, et les encouragements et la confiance qu’ils nous ont toujours témoignés. 
+Remerciement: Au terme de notre travail, nous tenons à témoigner notre profonde reconnaissance à toutes les personnes dont nous avons sollicité la compétence et l’expérience.  Nous remercions vivement Monsieur Julien Sopéna, Professeur à l’Université Pierre et Marie Curie, Monsieur Maxime Lorrillere ainsi que nos camarades en SAR. Nous souhaitons leur exprimer notre gratitude pour les connaissances qu’ils ont partagées, et les encouragements et la confiance qu’ils nous ont toujours témoignés. 
 	
 1. Présentation générale: 
 
